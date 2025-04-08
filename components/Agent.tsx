@@ -1,5 +1,6 @@
 "use client"
 import { interviewer } from '@/constants'
+import { createFeedback } from '@/lib/actions/general.action'
 import { cn } from '@/lib/utils'
 import { vapi } from '@/lib/vapi-sdk'
 import Image from 'next/image'
@@ -59,12 +60,15 @@ const Agent = ({userName,userId,type, interviewId, questions}:AgentProps) => {
 
   const handleGenerateFeedback = async(messages:SavedMessage[])=>{
     console.log("Generate Feedback")
-    const {success,id} ={
-      success: true,
-      id:"feedback-id"
-    }
+
+    const {success,feedbackId:id} =await createFeedback({
+     interviewId: interviewId!,
+     userId: userId!,
+    transcript: messages,
+    })
+
     if(success && id){
-      router.push(`/feedback/${interviewId}/feedback`)
+      router.push(`/interview/${interviewId}/feedback`)
     }else{
       console.log("Error getting feedback")
       router.push("/")
@@ -103,13 +107,11 @@ const Agent = ({userName,userId,type, interviewId, questions}:AgentProps) => {
   }
 }
 
-
   const handleDisconnect = async()=>{
     setCallStatus(CallStatus.FINISHED)
     vapi.stop()
   }
   
-
   const latestMessage = messages[messages.length -1]?.content;
   const isCallInactiveOrFinished = callStatus === CallStatus.INACTIVE || callStatus === CallStatus.FINISHED;
 
